@@ -46,7 +46,7 @@
  */
 
 #include "bmp280.h"
-
+#include <stdio.h>
 /********************** Static function declarations ************************/
 
 /*!
@@ -228,6 +228,7 @@ int8_t bmp280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
             {
                 temp_len = len;
             }
+            printf("voy a escribir\n");
             rslt = dev->write(dev->dev_id, reg_addr[0], temp_buff, temp_len);
 
             /* Check for communication error and mask with an internal error code */
@@ -261,6 +262,7 @@ int8_t bmp280_soft_reset(const struct bmp280_dev *dev)
     rslt = null_ptr_check(dev);
     if (rslt == BMP280_OK)
     {
+      printf("pase el null ptr check\n");
         rslt = bmp280_set_regs(&reg_addr, &soft_rst_cmd, 1, dev);
 
         /* As per the datasheet, startup time is 2 ms. */
@@ -292,10 +294,13 @@ int8_t bmp280_init(struct bmp280_dev *dev)
             if ((rslt == BMP280_OK) &&
                 (dev->chip_id == BMP280_CHIP_ID1 || dev->chip_id == BMP280_CHIP_ID2 || dev->chip_id == BMP280_CHIP_ID3))
             {
+                printf("Pase el chequeo de validez\n");
                 rslt = bmp280_soft_reset(dev);
                 if (rslt == BMP280_OK)
                 {
+                    printf("Pase el soft reset\n");
                     rslt = get_calib_param(dev);
+                    printf("Pase el get_calib_param, %d\n", rslt);
                 }
                 break;
             }
@@ -312,6 +317,7 @@ int8_t bmp280_init(struct bmp280_dev *dev)
         }
         if (rslt == BMP280_OK)
         {
+            printf("Voy a setear los valores a default\n");
             /* Set values to default */
             dev->conf.filter = BMP280_FILTER_OFF;
             dev->conf.os_pres = BMP280_OS_NONE;
@@ -779,6 +785,7 @@ static int8_t get_calib_param(struct bmp280_dev *dev)
     if (rslt == BMP280_OK)
     {
         rslt = bmp280_get_regs(BMP280_DIG_T1_LSB_ADDR, temp, BMP280_CALIB_DATA_SIZE, dev);
+        printf("Obtuve los registros\n");
         if (rslt == BMP280_OK)
         {
             dev->calib_param.dig_t1 =

@@ -71,6 +71,7 @@ int main(void)
   // bmp.intf = BMP280_SPI_INTF;
 
   rslt = bmp280_init(&bmp);
+  printf("pase la inicializacion\n");
   print_rslt(" bmp280_init status", rslt);
 
   return 0;
@@ -105,14 +106,50 @@ void delay_ms(uint32_t period_ms)
  */
 int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length)
 {
-
+  printf("Voy a escribir\n");
   /* Implement the I2C write routine according to the target machine. */
-  char config[1] = {0};
-  config[0]=reg_addr;
   
-  write(file, config, 1);
+  // char config[1] = {0};
+  // config[0]=reg_addr;
+  // write(file, config, 1);
 
-  write(file, reg_data, length);
+  // char reg[1] = {reg_addr};
+  // int writeCount = write(file, reg, 1);
+
+//Este codigo puede pasar el soft reset
+  char reg[2];
+  reg[0] = reg_addr;
+  reg[1] = *reg_data;
+  int writeCount = write(file, reg, 2);
+
+  // printf("%d\n", value);
+  // printf("%d\n", *reg);
+  // printf("%d\n", reg);
+  // printf("%d\n", &reg_addr);
+  printf("reg_addr: %x\n", reg_addr);
+  printf("reg_data: %x\n", *reg_data);
+  printf("length: %d\n", length);
+  printf("writeCount: %d\n", writeCount);
+
+  // write(file, reg_data, length);
+
+  // if (write(file, &reg_data, length) != length)
+  // {
+  //   printf("Error : Input/output Error \n");
+  //   exit(1);
+  //   return -1;
+  // }
+
+
+// char adress[1] = {reg_addr};
+// char content[length] = { 2, 2, 2, 2 };
+
+// float* total = malloc(8 * sizeof(float)); // array to hold the result
+
+// memcpy(total,     x, 4 * sizeof(float)); // copy 4 floats from x to total[0]...total[3]
+// memcpy(total + 4, y, 4 * sizeof(float)); // copy 4 floats from y to total[4]...total[7]
+
+
 
   // char data[length];
   // memset(data, 0, length * sizeof(char));
@@ -146,45 +183,17 @@ int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint
 
 int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length)
 {
-  printf("hola\n");
-  /* Implement the I2C read routine according to the target machine. */
-  // Read 24 bytes of data from address(0x88)
-  char reg[1] = {reg_addr};
-  int writeCount = write(file, reg, 1);
-  // printf("%d\n", value);
-  // printf("%d\n", *reg);
-  // printf("%d\n", reg);
-  // printf("%d\n", &reg_addr);
-  printf("reg_addr: %d\n", reg_addr);
-  printf("length: %d\n", length);
-  printf("writeCount: %d\n", writeCount);
-  // char data[length];
-  // memset(data, 0, length * sizeof(char));
+  printf("Voy a leer\n");
+  /* Implement the I2C read routine according to the target machine. */  
+  int writeCount = write(file, &reg_addr, 1);
 
-  char data[length];
-  memset(data, 0, sizeof data);
-
-  if (read(file, data, length) != length)
+  if (read(file, reg_data, length) != length)
   {
     printf("Error : Input/output Error \n");
     exit(1);
     return -1;
   }
-  // printf("readCount: %d\n", readCount);
-  // printf("length: %d\n", length);
-  // printf("%d\n", data);
-  // printf("%x\n", data);
-  // printf("%s\n", data);
-  // printf("%d\n", *data);
-  printf("%x\n", *data);
-  // printf("%s\n", *data);
-  // printf("%d\n", &data);
-  // printf("%x\n", &data);
-  // printf("%s\n", &data);
-  // reg_addr = *data;
-  // *reg_addr = *data;
-  reg_addr = *data;
-
+  
   return 0;
 }
 
