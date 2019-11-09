@@ -5,6 +5,18 @@
 #include "stdio.h"
 #include "bmp280.h"
 
+#include <unistd.h> // for usleep
+#include <stdlib.h>
+#include <linux/i2c-dev.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <string.h>
+
+void sleep_ms(int milliseconds) // cross-platform sleep function
+{
+  usleep(milliseconds * 1000);
+}
+
 void delay_ms(uint32_t period_ms);
 int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length);
 int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length);
@@ -12,8 +24,25 @@ int8_t spi_reg_write(uint8_t cs, uint8_t reg_addr, uint8_t *reg_data, uint16_t l
 int8_t spi_reg_read(uint8_t cs, uint8_t reg_addr, uint8_t *reg_data, uint16_t length);
 void print_rslt(const char api_name[], int8_t rslt);
 
+int file;
+
 int main(void)
 {
+  // Create I2C bus
+  // int file;
+  char *bus = "/dev/i2c-2";
+  if ((file = open(bus, O_RDWR)) < 0)
+  {
+    perror("Failed to open the bus. \n");
+    exit(1);
+  }
+  // Get I2C device, BMP280 I2C address is 0x76(108)
+  if(ioctl(file, I2C_SLAVE, 0x76)){
+    printf("Failed to acquire bus access and/or talk to slave.\n");
+    /* ERROR HANDLING; you can check errno to see what went wrong */
+    exit(1);
+  }
+
     int8_t rslt;
     struct bmp280_dev bmp;
     struct bmp280_config conf;
@@ -99,6 +128,7 @@ int main(void)
 void delay_ms(uint32_t period_ms)
 {
     /* Implement the delay routine according to the target machine */
+    sleep_ms(period_ms);
 }
 
 /*!
@@ -118,7 +148,27 @@ int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint
 {
 
     /* Implement the I2C write routine according to the target machine. */
-    return -1;
+    printf("Voy a escribir\n");
+  char adress[1] = {reg_addr};
+  char content[length];
+
+  for(int i=0; i<length; i++){
+    content[i]=reg_data[i];
+    printf("content[%d] %x\n", i, content[0]);
+  }
+
+  char* total = malloc((1+length) * sizeof(char)); // array to hold the result
+  memcpy(total, adress, 1 * sizeof(char)); // copy 4 floats from x to total[0]...total[3]
+  memcpy(total + 1 * sizeof(char), content, length * sizeof(char)); // copy 4 floats from y to total[4]...total[7]
+
+  for(int i=0; i<length+1; i++){
+    printf("total[%d] %x\n", i, total[i]);
+  }
+
+  int writeCount = write(file, total, length+1);
+
+  free(total);
+  return 0;
 }
 
 /*!
@@ -138,7 +188,17 @@ int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint1
 {
 
     /* Implement the I2C read routine according to the target machine. */
+  printf("Voy a leer\n");
+  int writeCount = write(file, &reg_addr, 1);
+
+  if (read(file, reg_data, length) != length)
+  {
+    printf("Error : Input/output Error \n");
+    exit(1);
     return -1;
+  }
+  
+  return 0;
 }
 
 /*!
