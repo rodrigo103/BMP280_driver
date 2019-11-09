@@ -8,7 +8,7 @@
 #include "bmp280.h"
 #include <unistd.h> // for usleep
 
-// #include <stdlib.h>
+#include <stdlib.h>
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -141,22 +141,50 @@ int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint
  *  @retval >0 -> Failure Info
  *
  */
+#include <string.h>
+
+
 int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length)
 {
+  printf("hola\n");
   /* Implement the I2C read routine according to the target machine. */
   // Read 24 bytes of data from address(0x88)
   char reg[1] = {reg_addr};
-  write(file, reg, 1);
-
+  int writeCount = write(file, reg, 1);
+  // printf("%d\n", value);
+  // printf("%d\n", *reg);
+  // printf("%d\n", reg);
+  // printf("%d\n", &reg_addr);
+  printf("reg_addr: %d\n", reg_addr);
+  printf("length: %d\n", length);
+  printf("writeCount: %d\n", writeCount);
   // char data[length];
   // memset(data, 0, length * sizeof(char));
 
-  if (read(file, &reg_data, length) != length)
+  char data[length];
+  memset(data, 0, sizeof data);
+
+  if (read(file, data, length) != length)
   {
     printf("Error : Input/output Error \n");
     exit(1);
     return -1;
   }
+  // printf("readCount: %d\n", readCount);
+  // printf("length: %d\n", length);
+  // printf("%d\n", data);
+  // printf("%x\n", data);
+  // printf("%s\n", data);
+  // printf("%d\n", *data);
+  printf("%x\n", *data);
+  // printf("%s\n", *data);
+  // printf("%d\n", &data);
+  // printf("%x\n", &data);
+  // printf("%s\n", &data);
+  // reg_addr = *data;
+  // *reg_addr = *data;
+  reg_addr = *data;
+
   return 0;
 }
 
