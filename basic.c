@@ -6,13 +6,13 @@
 
 #include "stdio.h"
 #include "bmp280.h"
-#include <unistd.h> // for usleep
 
+#include <unistd.h> // for usleep
 #include <stdlib.h>
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-// #include <math.h>
+#include <string.h>
 
 void sleep_ms(int milliseconds) // cross-platform sleep function
 {
@@ -106,63 +106,28 @@ void delay_ms(uint32_t period_ms)
  */
 int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length)
 {
-  printf("Voy a escribir\n");
   /* Implement the I2C write routine according to the target machine. */
-  
-  // char config[1] = {0};
-  // config[0]=reg_addr;
-  // write(file, config, 1);
+  printf("Voy a escribir\n");
+  char adress[1] = {reg_addr};
+  char content[length];
 
-  // char reg[1] = {reg_addr};
-  // int writeCount = write(file, reg, 1);
+  for(int i=0; i<length; i++){
+    content[i]=reg_data[i];
+    printf("content[%d] %x\n", i, content[0]);
+  }
 
-//Este codigo puede pasar el soft reset
-  char reg[2];
-  reg[0] = reg_addr;
-  reg[1] = *reg_data;
-  int writeCount = write(file, reg, 2);
+  char* total = malloc((1+length) * sizeof(char)); // array to hold the result
+  memcpy(total, adress, 1 * sizeof(char)); // copy 4 floats from x to total[0]...total[3]
+  memcpy(total + 1 * sizeof(char), content, length * sizeof(char)); // copy 4 floats from y to total[4]...total[7]
 
-  // printf("%d\n", value);
-  // printf("%d\n", *reg);
-  // printf("%d\n", reg);
-  // printf("%d\n", &reg_addr);
-  printf("reg_addr: %x\n", reg_addr);
-  printf("reg_data: %x\n", *reg_data);
-  printf("length: %d\n", length);
-  printf("writeCount: %d\n", writeCount);
+  for(int i=0; i<length+1; i++){
+    printf("total[%d] %x\n", i, total[i]);
+  }
 
-  // write(file, reg_data, length);
+  int writeCount = write(file, total, length+1);
 
-  // if (write(file, &reg_data, length) != length)
-  // {
-  //   printf("Error : Input/output Error \n");
-  //   exit(1);
-  //   return -1;
-  // }
-
-
-// char adress[1] = {reg_addr};
-// char content[length] = { 2, 2, 2, 2 };
-
-// float* total = malloc(8 * sizeof(float)); // array to hold the result
-
-// memcpy(total,     x, 4 * sizeof(float)); // copy 4 floats from x to total[0]...total[3]
-// memcpy(total + 4, y, 4 * sizeof(float)); // copy 4 floats from y to total[4]...total[7]
-
-
-
-  // char data[length];
-  // memset(data, 0, length * sizeof(char));
-
-  // if (read(file, reg_data, length) != length)
-  // {
-  //   printf("Error : Input/output Error \n");
-  //   exit(1);
-  //   return -1;
-  // }
-  // return 0;
-
-  // return -1;
+  free(total);
+  return 0;
 }
 
 /*!
@@ -178,7 +143,6 @@ int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint
  *  @retval >0 -> Failure Info
  *
  */
-#include <string.h>
 
 
 int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length)
