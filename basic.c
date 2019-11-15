@@ -8,6 +8,12 @@
 #include "bmp280.h"
 #include <unistd.h> // for usleep
 
+// #include <stdlib.h>
+#include <linux/i2c-dev.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+// #include <math.h>
+
 void sleep_ms(int milliseconds) // cross-platform sleep function
 {
   usleep(milliseconds * 1000);
@@ -20,8 +26,21 @@ int8_t spi_reg_write(uint8_t cs, uint8_t reg_addr, uint8_t *reg_data, uint16_t l
 int8_t spi_reg_read(uint8_t cs, uint8_t reg_addr, uint8_t *reg_data, uint16_t length);
 void print_rslt(const char api_name[], int8_t rslt);
 
+int file;
+
 int main(void)
 {
+  // Create I2C bus
+  // int file;
+  char *bus = "/dev/i2c-2";
+  if ((file = open(bus, O_RDWR)) < 0)
+  {
+    printf("Failed to open the bus. \n");
+    exit(1);
+  }
+  // Get I2C device, BMP280 I2C address is 0x76(108)
+  ioctl(file, I2C_SLAVE, 0x76);
+
   int8_t rslt;
   struct bmp280_dev bmp;
 
@@ -82,7 +101,25 @@ int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint
 {
 
   /* Implement the I2C write routine according to the target machine. */
-  return -1;
+  char config[2] = {0};
+  config[0]=reg_addr;
+  config[1]=reg_data;
+
+  write(file, reg_data, 2);
+
+
+  // char data[length];
+  // memset(data, 0, length * sizeof(char));
+
+  // if (read(file, reg_data, length) != length)
+  // {
+  //   printf("Error : Input/output Error \n");
+  //   exit(1);
+  //   return -1;
+  // }
+  // return 0;
+
+  // return -1;
 }
 
 /*!
@@ -101,28 +138,20 @@ int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint
 int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length)
 {
   /* Implement the I2C read routine according to the target machine. */
-  // // Read 24 bytes of data from address(0x88)
-  // char reg[1] = {0x88};
-  // write(file, reg, 1);
-  // char data[24] = {0};
-  // if (read(file, data, 24) != 24)
-  // {
-  //   printf("Error : Input/output Error \n");
-  //   exit(1);
-  // }
-
   // Read 24 bytes of data from address(0x88)
-  char reg[1] = {0x88};
+  char reg[1] = {reg_addr};
   write(file, reg, 1);
-  char data[length] = {0};
-  if (read(file, data, length) != length)
+
+  // char data[length];
+  // memset(data, 0, length * sizeof(char));
+
+  if (read(file, reg_data, length) != length)
   {
     printf("Error : Input/output Error \n");
     exit(1);
     return -1;
   }
-  return data;
-  
+  return 0;
 }
 
 /*!
