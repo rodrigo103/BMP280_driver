@@ -35,11 +35,17 @@ int main(void)
   char *bus = "/dev/i2c-2";
   if ((file = open(bus, O_RDWR)) < 0)
   {
-    printf("Failed to open the bus. \n");
+    perror("Failed to open the bus. \n");
     exit(1);
   }
   // Get I2C device, BMP280 I2C address is 0x76(108)
-  ioctl(file, I2C_SLAVE, 0x76);
+  if(ioctl(file, I2C_SLAVE, 0x76)){
+    printf("Failed to acquire bus access and/or talk to slave.\n");
+    /* ERROR HANDLING; you can check errno to see what went wrong */
+    exit(1);
+  }
+
+// https://elinux.org/Interfacing_with_I2C_Devices
 
   int8_t rslt;
   struct bmp280_dev bmp;
@@ -101,12 +107,12 @@ int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint
 {
 
   /* Implement the I2C write routine according to the target machine. */
-  char config[2] = {0};
+  char config[1] = {0};
   config[0]=reg_addr;
-  config[1]=reg_data;
+  
+  write(file, config, 1);
 
-  write(file, reg_data, 2);
-
+  write(file, reg_data, length);
 
   // char data[length];
   // memset(data, 0, length * sizeof(char));
@@ -145,7 +151,7 @@ int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint1
   // char data[length];
   // memset(data, 0, length * sizeof(char));
 
-  if (read(file, reg_data, length) != length)
+  if (read(file, &reg_data, length) != length)
   {
     printf("Error : Input/output Error \n");
     exit(1);
