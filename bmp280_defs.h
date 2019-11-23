@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bmp280_defs.h
- * @date	2018-11-9
- * @version	v3.2.0
+ * @date	2019-09-09
+ * @version	v3.3.2
  *
  */
 
@@ -327,42 +327,27 @@ extern "C" {
 
 /*! @brief Macros to read out API revision number */
 /*Register holding custom trimming values */
-#define BMP280_ST_TRIMCUSTOM_REG               UINT8_C(0x87)
-#define BMP280_ST_TRIMCUSTOM_REG_APIREV__POS   UINT8_C(1)
-#define BMP280_ST_TRIMCUSTOM_REG_APIREV__MSK   UINT8_C(0x06)
-#define BMP280_ST_TRIMCUSTOM_REG_APIREV__LEN   UINT8_C(2)
-#define BMP280_ST_TRIMCUSTOM_REG_APIREV__REG   BMP280_ST_TRIMCUSTOM_REG
+#define BMP280_ST_TRIMCUSTOM_REG             UINT8_C(0x87)
+#define BMP280_ST_TRIMCUSTOM_REG_APIREV__POS UINT8_C(1)
+#define BMP280_ST_TRIMCUSTOM_REG_APIREV__MSK UINT8_C(0x06)
+#define BMP280_ST_TRIMCUSTOM_REG_APIREV__LEN UINT8_C(2)
+#define BMP280_ST_TRIMCUSTOM_REG_APIREV__REG BMP280_ST_TRIMCUSTOM_REG
 
 /* highest API revision supported is revision 0. */
-#define BMP280_ST_MAX_APIREVISION              UINT8_C(0x00)
+#define BMP280_ST_MAX_APIREVISION            UINT8_C(0x00)
 
 /*! @brief Macros holding the minimum and maximum for trimming values */
 /* 0x00000 is minimum output value */
-#define BMP280_ST_ADC_T_MIN                    INT32_C(0x00000)
+#define BMP280_ST_ADC_T_MIN                  INT32_C(0x00000)
 
 /* 0xFFFF0 is maximum 20-bit output value without over sampling */
-#define BMP280_ST_ADC_T_MAX                    INT32_C(0xFFFF0)
+#define BMP280_ST_ADC_T_MAX                  INT32_C(0xFFFF0)
 
 /* 0x00000 is minimum output value */
-#define BMP280_ST_ADC_P_MIN                    INT32_C(0x00000)
+#define BMP280_ST_ADC_P_MIN                  INT32_C(0x00000)
 
 /* 0xFFFF0 is maximum 20-bit output value without over sampling */
-#define BMP280_ST_ADC_P_MAX                    INT32_C(0xFFFF0)
-
-/*! @brief Macros holding the bound values for the temperature in degree celsius */
-
-#define BMP280_ST_PLAUSIBLE_TEMP_MIN           UINT8_C(0)
-#define BMP280_ST_PLAUSIBLE_TEMP_MAX           UINT8_C(40)
-
-/*! @brief Macros holding the bound values for the pressure in hPa */
-
-#define BMP280_ST_PLAUSIBLE_PRESS_MIN          UINT8_C(900)
-#define BMP280_ST_PLAUSIBLE_PRESS_MAX          UINT8_C(1100)
-
-/*! @brief Macros holding integer resolution for pressure in hpa and temperature in C measurement */
-
-#define BMP280_ST_TEMPERATURE_RESOLUTION_INT32 UINT8_C(100)
-#define BMP280_ST_PRESSURE_RESOLUTION_INT32    UINT8_C(100)
+#define BMP280_ST_ADC_P_MAX                  INT32_C(0xFFFF0)
 
 /*! @name Function pointer type definitions */
 typedef int8_t (*bmp280_com_fptr_t)(uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_t len);
@@ -407,7 +392,7 @@ struct bmp280_status
 struct bmp280_uncomp_data
 {
     int32_t uncomp_temp;
-    int32_t uncomp_press;
+    uint32_t uncomp_press;
 };
 
 /*! @name API device structure */

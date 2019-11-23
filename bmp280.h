@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bmp280.h
- * @date	2018-11-9
- * @version	v3.2.0
+ * @date	2019-09-09
+ * @version	v3.3.2
  *
  */
 
@@ -225,7 +225,7 @@ int8_t bmp280_get_comp_temp_32bit(int32_t *comp_temp, int32_t uncomp_temp, struc
  * @return Result of API execution
  * @retval Zero for Success, non-zero otherwise.
  */
-int8_t bmp280_get_comp_pres_32bit(uint32_t *comp_pres, int32_t uncomp_pres, const struct bmp280_dev *dev);
+int8_t bmp280_get_comp_pres_32bit(uint32_t *comp_pres, uint32_t uncomp_pres, const struct bmp280_dev *dev);
 
 #ifndef BMP280_DISABLE_64BIT_COMPENSATION
 
@@ -243,7 +243,7 @@ int8_t bmp280_get_comp_pres_32bit(uint32_t *comp_pres, int32_t uncomp_pres, cons
  * @return Result of API execution
  * @retval Zero for Success, non-zero otherwise.
  */
-int8_t bmp280_get_comp_pres_64bit(uint32_t *pressure, int32_t uncomp_pres, const struct bmp280_dev *dev);
+int8_t bmp280_get_comp_pres_64bit(uint32_t *pressure, uint32_t uncomp_pres, const struct bmp280_dev *dev);
 
 #endif /* BMP280_DISABLE_64BIT_COMPENSATION */
 
@@ -277,7 +277,7 @@ int8_t bmp280_get_comp_temp_double(double *temperature, int32_t uncomp_temp, str
  * @return Result of API execution
  * @retval Zero for Success, non-zero otherwise.
  */
-int8_t bmp280_get_comp_pres_double(double *pressure, int32_t uncomp_pres, const struct bmp280_dev *dev);
+int8_t bmp280_get_comp_pres_double(double *pressure, uint32_t uncomp_pres, const struct bmp280_dev *dev);
 
 #endif /* BMP280_DISABLE_DOUBLE_COMPENSATION */
 
@@ -290,16 +290,6 @@ int8_t bmp280_get_comp_pres_double(double *pressure, int32_t uncomp_pres, const 
  * @return Measurement time for the active configuration in milliseconds
  */
 uint8_t bmp280_compute_meas_time(const struct bmp280_dev *dev);
-
-/*!
- * @brief This API performs self-test to check whether compensated temperature and pressure are within the range
- *
- * @param[in] dev : structure instance of bmp280_dev
- *
- * @return status of test results such as init, reset, config, adc read, compensation
- * and non-compensation output range of both temperature and pressure
- */
-int8_t bmp280_selftest(struct bmp280_dev *dev);
 
 #ifdef __cplusplus
 }
