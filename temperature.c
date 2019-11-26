@@ -12,6 +12,12 @@
 #include <fcntl.h>
 #include <string.h>
 
+#include <stdint.h>
+#include <linux/spi/spidev.h>
+
+#define SPI
+// #define I2C
+
 void sleep_ms(int milliseconds) // cross-platform sleep function
 {
   usleep(milliseconds * 1000);
@@ -28,6 +34,7 @@ int file;
 
 int main(void)
 {
+  #ifdef I2C
   // Create I2C bus
   // int file;
   char *bus = "/dev/i2c-2";
@@ -42,6 +49,50 @@ int main(void)
     /* ERROR HANDLING; you can check errno to see what went wrong */
     exit(1);
   }
+  #endif
+
+  #ifdef SPI
+  // Create SPI bus
+  // int file;
+  char *bus = "/dev/spidev1.0";
+  if ((file = open(bus, O_RDWR)) < 0)
+  {
+    perror("Failed to open the bus. \n");
+    exit(1);
+  }
+
+  // unsigned int fd, i = 0; // file handle and loop counter
+  // char a = 112;
+
+  unsigned char bits = 8;  // 8-bits per word
+  unsigned char mode = SPI_MODE_0; // SPI mode 0
+  uint32_t speed = 10000;     // Speed is 1 MHz
+  // The following calls set up the SPI bus properties
+  if(ioctl(file, SPI_IOC_WR_MODE, &mode) == -1){
+    perror("Fallo el ioctl. \n");
+    exit(1);
+  }
+  if(ioctl(file, SPI_IOC_RD_MODE, &mode) == -1){
+    perror("Fallo el ioctl. \n");
+    exit(1);
+  }
+  if(ioctl(file, SPI_IOC_WR_BITS_PER_WORD, &bits) == -1){
+    perror("Fallo el ioctl. \n");
+    exit(1);
+  }
+  if(ioctl(file, SPI_IOC_RD_BITS_PER_WORD, &bits) == -1){
+    perror("Fallo el ioctl. \n");
+    exit(1);
+  }
+  if(ioctl(file, SPI_IOC_WR_MAX_SPEED_HZ, &speed) == -1){
+    perror("Fallo el ioctl. \n");
+    exit(1);
+  }
+  if(ioctl(file, SPI_IOC_RD_MAX_SPEED_HZ, &speed) == -1){
+    perror("Fallo el ioctl. \n");
+    exit(1);
+  }
+  #endif
 
     int8_t rslt;
     struct bmp280_dev bmp;
@@ -53,6 +104,7 @@ int main(void)
     /* Map the delay function pointer with the function responsible for implementing the delay */
     bmp.delay_ms = delay_ms;
 
+  #ifdef I2C
     /* Assign device I2C address based on the status of SDO pin (GND for PRIMARY(0x76) & VDD for SECONDARY(0x77)) */
     bmp.dev_id = BMP280_I2C_ADDR_PRIM;
 
@@ -62,15 +114,17 @@ int main(void)
     /* Map the I2C read & write function pointer with the functions responsible for I2C bus transfer */
     bmp.read = i2c_reg_read;
     bmp.write = i2c_reg_write;
+  #endif
 
-    /* To enable SPI interface: comment the above 4 lines and uncomment the below 4 lines */
+/* To enable SPI interface: comment the above 4 lines and uncomment the below 4 lines */
 
-    /*
-     * bmp.dev_id = 0;
-     * bmp.read = spi_reg_read;
-     * bmp.write = spi_reg_write;
-     * bmp.intf = BMP280_SPI_INTF;
-     */
+  #ifdef SPI
+    bmp.dev_id = 0;
+    bmp.read = spi_reg_read;
+    bmp.write = spi_reg_write;
+    bmp.intf = BMP280_SPI_INTF;
+  #endif
+
     rslt = bmp280_init(&bmp);
     print_rslt(" bmp280_init status", rslt);
 
@@ -186,7 +240,6 @@ int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint
  */
 int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length)
 {
-
     /* Implement the I2C read routine according to the target machine. */
   printf("Voy a leer\n");
   int writeCount = write(file, &reg_addr, 1);
@@ -197,7 +250,6 @@ int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint1
     exit(1);
     return -1;
   }
-  
   return 0;
 }
 
@@ -236,9 +288,21 @@ int8_t spi_reg_write(uint8_t cs, uint8_t reg_addr, uint8_t *reg_data, uint16_t l
  */
 int8_t spi_reg_read(uint8_t cs, uint8_t reg_addr, uint8_t *reg_data, uint16_t length)
 {
+  /* Implement the SPI read routine according to the target machine. */
+  printf("Voy a leer\n");
+  int writeCount = write(file, &reg_addr, 1);
+  printf("writecount: %d\n", writeCount);
 
-    /* Implement the SPI read routine according to the target machine. */
+  if (read(file, reg_data, length) != length)
+  {
+    printf("Error : Input/output Error \n");
+    exit(1);
     return -1;
+  }
+  printf("reg_addr: %d\n", reg_addr);
+  printf("reg_data: %d\n", *reg_data);
+  printf("length: %d\n", length);
+  return 0;
 }
 
 /*!
